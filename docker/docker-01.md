@@ -382,6 +382,297 @@ docker rmi `docker images -q`：删除所有镜像
 
 ### Docker容器操作
 
+#### 查看容器
+
+**查看正在运行容器：**
+
+```docker
+docker ps
+```
+
+#### 查看所有的容器（启动过的历史容器）
+
+```docker
+docker ps –a
+```
+
+#### 查看最后一次运行的容器：
+
+```docker
+docker ps –l
+```
+
+#### 查看停止的容器
+
+```docker
+docker ps -f status=exited
+```
+
+#### 创建与启动容器
+
+**创建容器常用的参数说明：**
+
+**创建容器命令：**
+
+```docker
+docker run
+```
+
+-i：表示运行容器
+
+-t：表示容器启动后会进入其命令行。加入这两个参数后，容器创建就能登录进去。即分配一个伪终端。
+
+--name :为创建的容器命名。
+
+-v：表示目录映射关系（前者是宿主机目录，后者是映射到宿主机上的目录），可以使用多个－v做多个目录或文件映射。注意：最好做目录映射，在宿主机上做修改，然后共享到容器上。
+
+-d：在run后面加上-d参数,则会创建一个守护式容器在后台运行（这样创建容器后不会自动登录容器，如果只加-i -t两个参数，创建后就会自动进去容器）。
+
+-p：表示端口映射，前者是宿主机端口，后者是容器内的映射端口。可以使用多个－p做多个端口映射
+
+#### 交互式容器
+
+创建一个交互式容器并取名为mycentos
+
+```docker
+docker run -it --name=mycentos centos:7 /bin/bash
+```
+
+通过ps命令查看，发现可以看到启动的容器，状态为启动状态
+
+使用exit命令退出当前容器
+
+然后用ps -a 命令查看发现该容器也随之停止：
+
+#### 守护式容器
+
+创建一个守护式容器：如果对于一个需要长期运行的容器来说，我们可以创建一个守护式容器。命令如下（容器名称不能重复）：
+
+```docker
+docker run -di --name=mycentos2 centos:7
+```
+
+**登录守护式容器方式**
+
+```docker
+docker exec -it container_name (或者 container_id)  /bin/bash（exit退出时，容器不会停止）
+```
+
+#### 停止与启动容器	
+
+停止正在运行的容器：
+
+```docker
+docker stop $CONTAINER_NAME/ID
+```
+
+启动已运行过的容器：
+
+```docker
+docker start $CONTAINER_NAME/ID
+
+
+重新启动已运行过的容器：
+docker restart $CONTAINER_NAME/IDdocker start $CONTAINER_NAME/ID
+```
+
+#### 文件拷贝
+
+如果我们需要将文件拷贝到容器内可以使用cp命令
+
+```docker
+docker cp 需要拷贝的文件或目录 容器名称:容器目录
+```
+
+也可以将文件从容器内拷贝出来
+
+```docker
+docker cp 容器名称:容器目录 需要拷贝的文件或目录
+```
+
+#### 目录挂载
+
+我们可以在创建容器的时候，将宿主机的目录与容器内的目录进行映射，这样我们就可以通过修改宿主机某个目录的文件从而去影响容器。
+
+创建容器 添加-v参数 后边为   宿主机目录:容器目录
+
+```docker
+docker run -di -v /usr/local/myhtml:/usr/local/myhtml --name=mycentos2 centos:7
+```
+
+如果你共享的是多级的目录，可能会出现权限不足的提示。
+
+这是因为CentOS7中的安全模块selinux把权限禁掉了，我们需要添加参数  --privileged=true  来解决挂载的目录没有权限的问题
+
+#### 查看容器IP地址
+
+我们可以通过以下命令查看容器运行的各种数据
+
+```docker
+docker inspect mycentos2
+```
+
+也可以直接执行下面的命令直接输出IP地址
+
+```docker
+docker inspect --format='{{.NetworkSettings.IPAddress}}' mycentos2
+```
+
+#### 删除容器
+
+删除指定的容器：
+
+```docker
+docker rm $CONTAINER_ID/NAME
+```
+
+注意，只能删除停止的容器
+
+删除所有容器：
+
+```docker
+docker rm `docker ps -a -q`
+```
+
+### 部署应用
+
+#### MySQL部署
+
+##### 拉取MySQL镜像
+
+```docker
+docker pull mysql
+```
+
+##### 查看镜像
+
+```docker
+docker images
+```
+
+##### 创建MySQL容器
+
+```docker
+docker run -di --name hgx -p 33306:3306 -e MYSQL_ROOT_PASSWORD=123456 mysql
+```
+
+-p 代表端口映射，格式为  宿主机映射端口:容器运行端口
+
+-e 代表添加环境变量  MYSQL_ROOT_PASSWORD是root用户的登陆密码
+
+##### 进入MySQL容器,登陆MySQL 
+
+进入mysql容器
+
+```docker
+docker exec -it hgx /bin/bash
+```
+
+登陆mysql
+
+```docker
+mysql -u root -p
+```
+
+### tomcat部署
+
+#### 拉取tomcat镜像
+
+```docker
+docker pull tomcat:7-jre7
+```
+
+#### 创建tomcat容器
+
+创建容器  -p表示地址映射
+
+```docker
+docker run -di --name=hgx -p 9000:8080 
+-v /usr/local/myhtml:/usr/local/tomcat/webapps --privileged=true tomcat:7-jre7
+```
+
+### Nginx部署
+
+#### 拉取Nginx镜像
+
+```docker
+docker pull nginx
+```
+
+#### 创建Nginx容器
+
+```docker
+docker run -di --name=hgx -p 80:80  nginx/bin/bash
+```
+
+官方的nginx镜像,nginx配置文件nginx.conf 在/etc/nginx/目录下。
+
+###  Redis 部署
+
+#### 拉取Redis镜像
+
+```docker
+docker pull redis
+```
+
+#### 创建Redis容器
+
+```docker
+ docker run -di --name=hgx -p 6379:6379 redis
+```
+
+## 备份与迁移
+
+### 容器保存为镜像
+
+我们可以通过以下命令将容器保存为镜像
+
+```docker
+docker commit hgx mynginx
+```
+
+hgx是容器名称
+
+mynginx是新的镜像名称
+
+此镜像的内容就是你当前容器的内容，接下来你可以用此镜像再次运行新的容器
+
+### 镜像备份
+
+```docker
+docker  save -o mynginx.tar mynginx
+```
+
+-o 输出到的文件
+
+执行后，运行ls命令即可看到打成的tar包
+
+### 镜像恢复与迁移
+
+```docker
+docker load -i mynginx.tar
+```
+
+-i 输入的文件
+
+执行后再次查看镜像，可以看到镜像已经恢复
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -633,5 +633,33 @@ git origin [远程地址]
 
 
 
+## Git问题
+
+### RPC failed; curl 56 OpenSSL SSL_read: SSL_ERROR_SYSCALL, errno 10054
+
+```git
+LENOVO@hgx MINGW64 ~/Desktop/note (master)
+$ git push https://github.com/huangguixin/note.git master
+Counting objects: 83, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (82/82), done.
+error: RPC failed; curl 56 OpenSSL SSL_read: SSL_ERROR_SYSCALL, errno 10054
+fataWriting objectsl: :T he remote  e7n5% (63d h/83), 11.95 MiB | 2un0.00 KiB/s p unexpectedly
+Writing objects: 100% (83/83), 42.90 MiB | 348.00 KiB/s, done.
+Total 83 (delta 4), reused 0 (delta 0)
+fatal: The remote end hung up unexpectedly
+Everything up-to-date
+```
+
+### 解决方法
+
+**执行如下命令**
+
+```git
+git config http.sslVerify "false"
+```
+
+
+
 
 
