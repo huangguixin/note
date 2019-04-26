@@ -631,7 +631,156 @@ git origin [远程地址]
 
 ## SSH 登录 
 
+进入当前用户的家目录 
 
+```git
+cd ~
+```
+
+删除.ssh 目录 
+
+```git
+ rm -rvf .ssh
+```
+
+运行命令生成.ssh 密钥目录 
+
+```git
+ssh-keygen -t rsa -C hgx@aliyun.com  //github的账号邮箱,[注意： 这里-C 这个参数是大写的 C]
+```
+
+进入.ssh 目录查看文件列表 
+
+```git
+$ cd .ssh
+$ ls -lF
+```
+
+查看 id_rsa.pub 文件内容 
+
+```git
+$ cat id_rsa.pub
+```
+
+复制 id_rsa.pub 文件内容， 登录 GitHub， 点击用户头像→Settings→SSH and GPG keys 
+
+New SSH Key 
+
+输入复制的密钥信息 
+
+回到 Git bash 创建远程地址别名 
+
+git remote add origin_ssh git@github.com:hgx/huashan.git 
+
+推送文件进行测试 
+
+## Eclipse 操作 
+
+### 工程初始化为本地库 
+
+工程→右键→Team→Share Project→Git 
+
+![](img/52.png)
+
+### Eclipse 中忽略文件 
+
+ **概念： Eclipse 特定文件**
+这些都是 Eclipse 为了管理我们创建的工程而维护的文件， 和开发的代码没有直接关系。 最好不要在 Git 中进行追踪， 也就是把它们忽略。
+.classpath 文件
+.project 文件
+.settings 目录下所有文件
+ **为什么要忽略 Eclipse 特定文件呢？**
+同一个团队中很难保证大家使用相同的 IDE 工具， 而 IDE 工具不同时， 相关工程特定文件就有可能不同。 如果这些文件加入版本控制， 那么开发时很可能需要为了这些文件解决冲突。 
+
+ **GitHub 官网样例文件**
+https://github.com/github/gitignore
+https://github.com/github/gitignore/blob/master/Java.gitignore
+ **编辑本地忽略配置文件， 文件名任意** 
+
+```git
+//文件名 Java.gitignore
+# Compiled class file
+*.class
+# Log file
+*.log
+# BlueJ files
+*.ctxt
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+.classpath
+.project
+.settings
+target
+```
+
+ **在~/.gitconfig 文件中引入上述文件**
+[core]
+excludesfile = C:/Users/Lenovo/Java.gitignore
+[注意： 这里路径中一定要使用“/” ， 不能使用“\” ] 
+
+### 推送到远程库 
+
+![](img/53.png)
+
+![](img/54.png)
+
+### Oxygen Eclipse 克隆工程操作 
+
+Import...导入工程 
+
+![](img/55.png)
+
+![](img/56.png)
+
+到远程库复制工程地址 
+
+指定工程导入方式， 这里只能用： Import as general project 
+
+转换工程类型 
+
+![](img/57.png)
+
+### Kepler Eclipse 克隆工程操作 
+
+问题： 不能保存到当前 Eclipse 工作区目录 
+
+正确做法： 保存到工作区以外的目录中 
+
+### 解决冲突 
+
+冲突文件→右键→Team→Merge Tool
+修改完成后正常执行 add/commit 操作即可 
+
+## Git 工作流 
+
+### 概念
+
+在项目开发过程中使用 Git 的方式 
+
+### 分类 
+
+#### 集中式工作流 
+
+像 SVN 一样， 集中式工作流以中央仓库作为项目所有修改的单点实体。 所有修改都提交到 Master 这个分支上。
+这种方式与 SVN 的主要区别就是开发人员有本地库。Git 很多特性并没有用到。 
+
+#### GitFlow 工作流 
+
+Gitflow 工作流通过为功能开发、 发布准备和维护设立了独立的分支， 让发布迭代过程更流畅。 严格的分支模型也为大型项目提供了一些非常必要的结构。 
+
+#### Forking 工作流 
+
+Forking 工作流是在 GitFlow 基础上， 充分利用了 Git 的 Fork 和 pull request 的功能以达到代码审核的目的。 更适合安全可靠地管理大团队的开发者， 而且能接受不信任贡献者的提交。 
 
 ## Git问题
 
