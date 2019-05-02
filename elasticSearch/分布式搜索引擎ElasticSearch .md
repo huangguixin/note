@@ -579,3 +579,108 @@ http://127.0.0.1:9200/_analyze?analyzer=ik_smart&pretty=true&text=广东东莞�
 }
 ```
 
+
+
+## elasticsearch与MySQL数据同步 
+
+### Logstash 
+
+#### 什么是Logstash 
+
+Logstash是一款轻量级的日志搜集处理框架，可以方便的把分散的、多样化的日志搜集
+起来，并进行自定义的处理，然后传输到指定的位置，比如某个服务器或者文件 
+
+#### Logstash安装与测试 
+
+解压，进入bin目录 
+
+```elasticsearch
+logstash ‐e 'input { stdin { } } output { stdout {} }'
+```
+
+控制台输入字符，随后就有日志输出 控制台输入字符，随后就有日志输出 
+
+![](img/10.png)
+
+stdin，表示输入流，指从键盘输入
+stdout，表示输出流，指从显示器输出
+命令行参数:
+-e 执行
+--config 或 -f 配置文件，后跟参数类型可以是一个字符串的配置或全路径文件名或全路径
+路径(如：/etc/logstash.d/，logstash会自动读取/etc/logstash.d/目录下所有*.conf 的文
+本文件，然后在自己内存里拼接成一个完整的大配置文件再去执行) 
+
+### MySQL数据导入Elasticsearch 
+
+（1）在logstash-5.6.8安装目录下创建文件夹mysqletc （名称随意）
+（2）文件夹下创建mysql.conf （名称随意） ，内容如下： 
+
+```elasticsearch
+input {
+    jdbc {
+    # mysql jdbc connection string to our backup databse 后面的test
+    对应mysql中的test数据库
+    jdbc_connection_string =>
+    "jdbc:mysql://127.0.0.1:3306/tensquare_article?characterEncoding=UTF8"
+    # the user we wish to excute our statement as
+    jdbc_user => "root"
+    jdbc_password => "123456"
+    # the path to our downloaded jdbc driver
+    jdbc_driver_library => "D:/logstash‐5.6.8/mysqletc/mysql‐
+    connector‐java‐5.1.46.jar"
+    # the name of the driver class for mysql
+    jdbc_driver_class => "com.mysql.jdbc.Driver"
+    jdbc_paging_enabled => "true"
+    jdbc_page_size => "50000"
+    #以下对应着要执行的sql的绝对路径。
+    statement => "select id,title,content from tb_article"
+    #定时字段 各字段含义（由左至右）分、时、天、月、年，全部为*默认含义为
+    每分钟都更新
+    schedule => "* * * * *"
+    }
+    }
+    output {
+    elasticsearch {
+    #ESIP地址与端口
+    hosts => "localhost:9200"
+    #ES索引名称（自己定义的）
+    index => "tensquare"
+    #自增ID编号
+    document_id => "%{id}"
+    document_type => "article"
+    } s
+    tdout {
+    #以JSON格式输出
+    codec => json_lines
+    }
+}
+```
+
+（3）将mysql驱动包mysql-connector-java-5.1.46.jar拷贝至D:/logstash-5.6.8/mysqletc/ 下 。D:/logstash-5.6.8是你的安装目录 
+
+（4）命令行下执行 
+
+```elasticsearch
+logstash ‐f ../mysqletc/mysql.conf
+```
+
+观察控制台输出，每间隔1分钟就执行一次sql查询 
+
+![](img/11.png)
+
+再次刷新elasticsearch-head的数据显示，看是否也更新了数据。 
+
+
+
+
+
+## 参考博客
+
+[[深入浅出 spring-data-elasticsearch 之 ElasticSearch 架构初探](https://www.bysocket.com/archives/1889/%e6%b7%b1%e5%85%a5%e6%b5%85%e5%87%ba-spring-data-elasticsearch-%e4%b9%8b-elasticsearch-%e6%9e%b6%e6%9e%84%e5%88%9d%e6%8e%a2%ef%bc%88%e4%b8%80%ef%bc%89)](https://www.bysocket.com/archives/1889/%e6%b7%b1%e5%85%a5%e6%b5%85%e5%87%ba-spring-data-elasticsearch-%e4%b9%8b-elasticsearch-%e6%9e%b6%e6%9e%84%e5%88%9d%e6%8e%a2%ef%bc%88%e4%b8%80%ef%bc%89)
+
+
+
+## Solr 和Elasticsearch性能区分 
+
+[](https://www.cnblogs.com/chowmin/articles/4629220.html)
+
